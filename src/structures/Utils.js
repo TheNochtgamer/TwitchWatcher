@@ -32,9 +32,13 @@ module.exports = class Utils {
       if (guildId) {
         if (!this.client.utils.checkId(guildId)) throw new Error('Id invalida');
         const GUILD = this.client.guilds.cache.get(guildId);
-        cmds = await GUILD.commands.set(this.client.commands);
+        cmds = await GUILD.commands.set(
+          this.client.commands.map(cmd => cmd.data),
+        );
       } else {
-        cmds = await this.client.application.commands.set(this.client.commands);
+        cmds = await this.client.application.commands.set(
+          this.client.commands.map(cmd => cmd.data),
+        );
       }
       if (!cmds) throw new Error('No se subio ningun comando');
       console.log(`(/) ${cmds.size} comandos subidos`);
