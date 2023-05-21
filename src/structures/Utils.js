@@ -47,17 +47,12 @@ module.exports = class Utils {
     }
   }
 
-  async notAuthorizedReply(interaction) {
-    const embed = new EmbedBuilder()
-      .setColor('Red')
-      .setAuthor({ name: '⛔Prohibido' })
-      .setDescription(
-        '```_ _\n' +
-          interaction.user.username +
-          '\nNo tenes permisos para usar este comando.\n_ _```',
-      )
-      .setTimestamp()
-      .setFooter({ text: interaction.client.user.username });
+  async embedReply(interaction, embedData) {
+    const embed = new EmbedBuilder(embedData);
+    if (!embedData.color) embed.setColor('White');
+    if (!embedData.timestamp) embed.setTimestamp();
+    if (!embedData.footer)
+      embed.setFooter({ text: interaction.client.user.username });
 
     try {
       if (interaction.replied || interaction.deferred) {
@@ -66,7 +61,7 @@ module.exports = class Utils {
         await interaction.reply({ embeds: [embed], ephemeral: true });
       }
     } catch (error) {
-      console.log('Error al responder una interaccion no authorizada', error);
+      console.log('Error al responder una interaccion', error);
     }
   }
 };

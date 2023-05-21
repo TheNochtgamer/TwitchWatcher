@@ -30,9 +30,10 @@ module.exports = {
     // allRoles_req = Boolean
     // allPerms_req = Boolean
     // everthing_req = Boolean
+    // onlyOwners = Boolean
     const pass = () => {
-      if (process.env.owner?.includes(interaction.user.id)) return 1;
-      if (command.owner) return 0;
+      if (process.env.BOT_OWNER?.includes(interaction.user.id)) return 1;
+      if (command.onlyOwners) return 0;
 
       const all = command.everthing_req;
       const member = interaction.member;
@@ -84,7 +85,17 @@ module.exports = {
       return 1;
     };
     if (!pass()) {
-      interaction.client.utils.notAuthorizedReply(interaction);
+      console.log(
+        `(U) ${interaction.user.tag} intento acceder al comando "${interaction.commandName}" sin autorizacion`,
+      );
+      interaction.client.utils.embedReply(interaction, {
+        color: 15548997,
+        author: { name: '⛔Prohibido' },
+        description:
+          '```\n \n> ' +
+          interaction.user.username +
+          '\nNo tenes permisos para usar este comando.\n \n```',
+      });
       return;
     }
     // --NCheckAuth--

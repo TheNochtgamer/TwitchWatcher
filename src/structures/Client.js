@@ -36,7 +36,7 @@ module.exports = class Bot extends Client {
     FILES.forEach(file => {
       try {
         const CMD = require(file);
-        this.commands.set(CMD.name, CMD);
+        this.commands.set(CMD.data.name, CMD);
       } catch (error) {
         console.log(`Error al cargar el archivo ${file}`, error);
       }
