@@ -8,12 +8,13 @@ module.exports = {
    * @param {Interaction} interaction
    */
   async run(interaction) {
+    const client = interaction.client;
     if (!interaction.isCommand()) return;
 
     const command = interaction.client.commands.get(interaction.commandName);
 
     if (!command) {
-      console.log(`No se encontro el comando ${interaction.commandName}`);
+      client.utils.log(`No se encontro el comando ${interaction.commandName}`);
       if (interaction.replied) return;
       interaction.reply({
         content:
@@ -85,10 +86,10 @@ module.exports = {
       return 1;
     };
     if (!pass()) {
-      console.log(
+      client.utils.log(
         `(U) ${interaction.user.tag} intento acceder al comando "${interaction.commandName}" sin autorizacion`,
       );
-      interaction.client.utils.embedReply(interaction, {
+      client.utils.embedReply(interaction, {
         color: 15548997,
         author: { name: '⛔Prohibido' },
         description:
@@ -103,7 +104,7 @@ module.exports = {
     try {
       await command.run(interaction);
     } catch (error) {
-      console.log(
+      client.utils.log(
         `Hubo un error ejecutando el comando ${interaction.commandName}:`,
         error,
       );

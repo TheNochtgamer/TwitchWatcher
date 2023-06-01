@@ -3,8 +3,14 @@ const fs = require('fs');
 const { EmbedBuilder } = require('discord.js');
 
 module.exports = class Utils {
-  constructor(client) {
+  #logPrefix;
+  constructor(client, logPrefix = '') {
     this.client = client;
+    this.#logPrefix = logPrefix;
+  }
+
+  log(...args) {
+    console.log(this.#logPrefix, ...args);
   }
 
   async loadFiles(dirName) {
@@ -24,13 +30,13 @@ module.exports = class Utils {
   }
 
   async summitCommands(guildId = process.env.GUILD) {
-    if (!this.client.commands.size) return;
+    if (!this.client.commands.size || !this.client) return;
     let cmds = null;
 
     console.log('Subiendo comandos...');
     try {
       if (guildId) {
-        if (!this.client.utils.checkId(guildId)) throw new Error('Id invalida');
+        if (!this.checkId(guildId)) throw new Error('Id invalida');
         const GUILD = this.client.guilds.cache.get(guildId);
         cmds = await GUILD.commands.set(
           this.client.commands.map(cmd => cmd.data),

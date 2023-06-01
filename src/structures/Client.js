@@ -8,8 +8,8 @@ const {
 const Utils = require('./Utils');
 
 module.exports = class Bot extends Client {
-  constructor(
-    options = {
+  constructor() {
+    super({
       intents: [
         IntentsBitField.Flags.Guilds,
         IntentsBitField.Flags.GuildMessages,
@@ -20,12 +20,10 @@ module.exports = class Bot extends Client {
       presence: {
         status: PresenceUpdateStatus.DoNotDisturb,
       },
-    },
-  ) {
-    super(options);
+    });
 
     this.commands = new Collection();
-    this.utils = new Utils(this);
+    this.utils = new Utils(this, '(DS)');
   }
 
   async loadCommands() {
@@ -47,7 +45,7 @@ module.exports = class Bot extends Client {
 
   async loadEvents() {
     console.log('Cargando eventos...');
-    const FILES = await this.utils.loadFiles('events');
+    const FILES = await this.utils.loadFiles('events/ds');
     this.removeAllListeners();
 
     FILES.forEach(file => {

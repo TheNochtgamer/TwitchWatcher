@@ -1,7 +1,10 @@
+const cacheMe = require('./services/cacheMe');
+
 require('dotenv').config();
-const Bot = require('./structures/Client');
 
 (async () => {
-  const bot = new Bot();
-  await bot.init(process.env.TOKEN);
+  const tmi = require('./services/twitchBot');
+  const bot = require('./services/discordBot');
+
+  await Promise.all([bot.init(process.env.TOKEN), tmi.init()]);
 })();
