@@ -1,1 +1,2 @@
-## Simple discord.js v14 layout
+# Twitch Watcher Bot
+> Discord x Twitch hook
