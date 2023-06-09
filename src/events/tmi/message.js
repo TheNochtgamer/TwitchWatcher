@@ -23,7 +23,9 @@ module.exports = {
     tmi.filters.forEach(filter => {
       if (
         filter.twChannels.includes(tmi.fixChannelName(channelName)) &&
-        filter.regex.test(message)
+        (filter.inverted
+          ? !filter.regex.test(message)
+          : filter.regex.test(message))
       )
         bot.addLog(
           new ToLogs(

@@ -89,6 +89,7 @@ module.exports = {
     const dsTarget = interaction.options.get('dschannel')?.channel;
     const twChannelsName = interaction.options.get('twchannels')?.value;
     const flags = interaction.options.get('flags')?.value;
+    const inverted = interaction.options.get('inverted')?.value;
 
     // if (!tmi.twConnectedChannels[0]?.name) {
     //   await interaction.reply({
@@ -124,6 +125,7 @@ module.exports = {
           res,
           dsChannel,
           twChannelsName.split(',').filter(twCh => twCh),
+          inverted,
         );
         tmi.filters.push(filter);
 

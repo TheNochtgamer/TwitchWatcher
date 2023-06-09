@@ -75,7 +75,7 @@ module.exports = class Tmi extends Client {
   // }
 
   fixChannelName(channelName = '') {
-    return channelName.replace('#', '');
+    return channelName.replace('#', '').replace(/ /g, '');
   }
 
   async loadEvents() {
