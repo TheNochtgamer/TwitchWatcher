@@ -18,7 +18,7 @@ module.exports = {
         .setDescription('Agrega este canal como log de un filtro')
         .addStringOption(opt =>
           opt
-            .setName('filtroName')
+            .setName('filtroname')
             .setDescription('El filtro a adjuntar')
             .setRequired(true)
             .setAutocomplete(true)
@@ -44,7 +44,7 @@ module.exports = {
         .setDescription('Elimina un filtro de un canal de discord')
         .addStringOption(opt =>
           opt
-            .setName('filtroName')
+            .setName('filtroname')
             .setDescription('El filtro a eliminar del canal')
             .setRequired(true)
             .setAutocomplete(true)
@@ -71,7 +71,7 @@ module.exports = {
    */
   async run(interaction) {
     const subCommand = interaction.options.getSubcommand();
-    const filtroName = interaction.options.get('filtroName', true).value;
+    const filtroName = interaction.options.get('filtroname', true).value;
     const dsTarget = interaction.options.get('dschannel')?.channel;
     const dsChannel = dsTarget ?? interaction.channel;
 

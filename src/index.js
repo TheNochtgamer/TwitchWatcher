@@ -9,5 +9,5 @@ require('dotenv').config();
     bot,
   };
 
-  await Promise.all([bot.init(process.env.TOKEN), tmi.init()]);
+  Promise.all([bot.init(process.env.TOKEN), tmi.init()]);
 })();

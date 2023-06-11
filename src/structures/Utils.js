@@ -13,8 +13,8 @@ module.exports = class Utils {
     console.log(this.#logPrefix, ...args);
   }
 
-  async loadFiles(dirName) {
-    const PATH = path.join(__dirname, '../', dirName);
+  async loadFiles(targetDir) {
+    const PATH = path.join(__dirname, '../', targetDir);
     const FILES = fs
       .readdirSync(PATH)
       .filter(f => f.endsWith('.js'))

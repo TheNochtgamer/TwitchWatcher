@@ -7,9 +7,9 @@ const {
   Collection,
 } = require('discord.js');
 const { setTimeout: delay } = require('timers/promises');
+const { Names } = require('./Enums');
 const tmi = require('../services/twitchBot');
 const ToLogs = require('./ToLogs');
-const { Names } = require('./Enums');
 
 module.exports = class Bot extends Client {
   /** @type {[ToLogs]} */
@@ -34,6 +34,7 @@ module.exports = class Bot extends Client {
     });
 
     this.commands = new Collection();
+    this.scripts = new Collection();
     this.utils = new Utils(this, '(DS)');
   }
 
@@ -55,14 +56,25 @@ module.exports = class Bot extends Client {
 
     const promises = dsChannels.map(dsChannel => {
       return (async () => {
-        if (dsChannel.isThread()) return false;
+        let exist = false;
+        try {
+          exist = !!(await dsChannel.fetch());
+        } catch (error) {}
+
+        if (dsChannel.isThread() || !exist) return false;
         const webhook =
           this.#webhooks.find(
-            webhookA => webhookA.channelId === dsChannel.id,
+            webhook2 => webhook2.channelId === dsChannel.id,
           ) ??
           (await dsChannel.fetchWebhooks()).at(0) ??
           (await dsChannel.createWebhook({ name: Names.newWebhook }));
         const myLogs = this.toLog.filter(log => log.dsChannel === dsChannel);
+
+        if (
+          !this.#webhooks.some(webhook2 => webhook2.channelId === dsChannel.id)
+        ) {
+          this.#webhooks.push(webhook);
+        }
 
         try {
           const content =
@@ -140,8 +152,32 @@ module.exports = class Bot extends Client {
     console.log(`(/) ${FILES.length} eventos cargados`);
   }
 
+  async loadScripts() {
+    console.log('Cargando scripts...');
+    const FILES = await this.utils.loadFiles('../scripts');
+    this.scripts.clear();
+
+    FILES.forEach(file => {
+      try {
+        const SCRIPT = require(file);
+        if (!SCRIPT.name) throw new Error('No tiene un nombre establecido');
+        if (!SCRIPT.run) throw new Error('No tiene un metodo run establecido');
+
+        this.scripts.set(SCRIPT.name, SCRIPT);
+      } catch (error) {
+        console.log(`Error al cargar el archivo ${file}`, error);
+      }
+    });
+
+    console.log(`(/) ${FILES.length} scripts cargados`);
+  }
+
   async init(token) {
-    await Promise.allSettled([this.loadEvents(), this.loadCommands()]);
+    await Promise.allSettled([
+      this.loadEvents(),
+      this.loadCommands(),
+      this.loadScripts(),
+    ]);
 
     await this.login(token);
 

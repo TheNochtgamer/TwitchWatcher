@@ -44,6 +44,8 @@ module.exports = class Tmi extends Client {
     )
       return false;
 
+    twChannelName = twChannelName.replace(/ /g, '').toLowerCase();
+
     this.connectedChannels.push(new TwChannel(twChannelName));
     this.utils.log(`<${twChannelName}> chat join`);
 
@@ -54,6 +56,8 @@ module.exports = class Tmi extends Client {
     if (!twChannelName || typeof twChannelName !== 'string') return false;
     const twChannel = this.isJoined(twChannelName);
     if (!twChannel) return false;
+
+    twChannelName = twChannelName.replace(/ /g, '').toLowerCase();
 
     this.connectedChannels.splice(
       this.connectedChannels.findIndex(twChannelA => twChannelA === twChannel),

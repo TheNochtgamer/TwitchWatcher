@@ -18,7 +18,7 @@ module.exports = {
         .setDescription('Añadir un filtro')
         .addStringOption(opt =>
           opt
-            .setName('filtroName')
+            .setName('filtroname')
             .setDescription('El nombre que tendra el filtro (debe ser unico)')
             .setRequired(true)
             .setMinLength(2),
@@ -71,7 +71,7 @@ module.exports = {
         .setDescription('Eliminar un filtro')
         .addStringOption(opt =>
           opt
-            .setName('filtroName')
+            .setName('filtroname')
             .setDescription('El filtro a eliminar')
             .setRequired(true)
             .setAutocomplete(true)
@@ -84,7 +84,7 @@ module.exports = {
         .setDescription('Adjunta un filtro a un canal de twitch')
         .addStringOption(opt =>
           opt
-            .setName('filtroName')
+            .setName('filtroname')
             .setDescription('El filtro a adjuntar')
             .setRequired(true)
             .setAutocomplete(true)
@@ -105,7 +105,7 @@ module.exports = {
         .setDescription('Separa un filtro de un canal de twitch')
         .addStringOption(opt =>
           opt
-            .setName('filtroName')
+            .setName('filtroname')
             .setDescription('El filtro a separar')
             .setRequired(true)
             .setAutocomplete(true)
@@ -127,7 +127,7 @@ module.exports = {
   async run(interaction) {
     const subCommand = interaction.options.getSubcommand();
     /** @type {String} */
-    const filtroName = interaction.options.get('filtroName', true).value;
+    const filtroName = interaction.options.get('filtroname', true).value;
 
     // if (!tmi.twConnectedChannels[0]?.name) {
     //   await interaction.reply({
@@ -286,7 +286,7 @@ module.exports = {
    */
   autoComplete(focused, interaction) {
     switch (focused.name) {
-      case 'filtroName':
+      case 'filtroname':
         return tmi.filters
           .filter(filter => filter.name.startsWith(focused.value))
           .map(filter => {
