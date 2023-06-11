@@ -2,15 +2,15 @@ module.exports = class Filter {
   /**
    *
    * @param {String} name
-   * @param {RegExp} regex
-   * @param {import("discord.js").GuildTextBasedChannel} dsChannel
+   * @param {RegExp} regExp
+   * @param {import("discord.js").GuildTextBasedChannel|null} dsChannel
    * @param {[String]} twChannels
    * @param {Boolean} inverted
    */
-  constructor(name, regex, dsChannel, twChannels, inverted = false) {
+  constructor(name, regExp, dsChannel, twChannels, inverted = false) {
     this.name = name;
-    this.regex = regex;
-    this.dsChannel = dsChannel;
+    this.regExp = regExp;
+    this.dsChannels = dsChannel ? [dsChannel] : [];
     this.twChannels = twChannels;
     this.inverted = inverted;
   }

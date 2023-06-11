@@ -21,7 +21,10 @@ module.exports = {
 
     try {
       options.push(
-        await command.autoComplete(interaction.options.getFocused(true)),
+        await command.autoComplete(
+          interaction.options.getFocused(true),
+          interaction,
+        ),
       );
       if (!options.length) options.push({ name: 'Error', value: 'Error' });
       await interaction.respond(options.flat());

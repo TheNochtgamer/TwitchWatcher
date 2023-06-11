@@ -1,9 +1,8 @@
-const cacheMe = require('../../services/cacheMe');
 const bot = require('../../services/discordBot');
 const tmi = require('../../services/twitchBot');
 const ToLogs = require('../../structures/ToLogs');
 
-const cachePadSpace = 30;
+// const cachePadSpace = 30;
 
 module.exports = {
   name: 'message',
@@ -21,18 +20,20 @@ module.exports = {
       userState['display-name']
     }> ${message}`;
     tmi.filters.forEach(filter => {
-      if (
-        filter.twChannels.includes(tmi.fixChannelName(channelName)) &&
-        (filter.inverted
-          ? !filter.regex.test(message)
-          : filter.regex.test(message))
-      )
-        bot.addLog(
-          new ToLogs(
-            content.length > 350 ? content.slice(0, 350) + '...' : content,
-            filter.dsChannel,
-          ),
-        );
+      filter.dsChannels.forEach(dsChannel => {
+        if (
+          filter.twChannels.includes(tmi.fixChannelName(channelName)) &&
+          (filter.inverted
+            ? !filter.regExp.test(message)
+            : filter.regExp.test(message))
+        )
+          bot.toLog.push(
+            new ToLogs(
+              content.length > 350 ? content.slice(0, 350) + '...' : content,
+              dsChannel,
+            ),
+          );
+      });
     });
 
     // const link = tmi.getLink(null, channel);

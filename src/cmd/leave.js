@@ -11,10 +11,11 @@ module.exports = {
     .setDescription('Expulsa el bot de un canal de twitch')
     .addStringOption(option =>
       option
-        .setName('twitch')
+        .setName('twchannel')
         .setDescription('Canal de twitch para salir')
         .setAutocomplete(true)
-        .setRequired(true),
+        .setRequired(true)
+        .setMinLength(2),
     )
     .setDMPermission(false)
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
@@ -24,9 +25,12 @@ module.exports = {
    * @param {CommandInteraction} interaction
    */
   async run(interaction) {
-    const twChannelName = interaction.options.get('twitch', true).value;
+    const twChannelName = interaction.options.get('twchannel', true).value;
     if (!tmi.isJoined(twChannelName)) {
-      await interaction.reply({ content: 'No estas unido a este canal' });
+      await interaction.reply({
+        content: 'No estas unido a este canal',
+        ephemeral: true,
+      });
       return;
     }
 
@@ -34,11 +38,24 @@ module.exports = {
     if (!res) {
       await interaction.reply({
         content: 'Algo salio mal al intentar salirse del canal',
+        ephemeral: true,
       });
       return;
     }
     await interaction.reply({
       content: `Canal "${twChannelName}" desconectado.`,
     });
+  },
+
+  autoComplete(focused) {
+    return tmi.connectedChannels
+      .map(({ name }) => name)
+      .filter(twChName => twChName.startsWith(focused.value))
+      .map(twChName => {
+        return {
+          name: twChName,
+          value: twChName,
+        };
+      });
   },
 };

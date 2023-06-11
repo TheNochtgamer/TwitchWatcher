@@ -5,7 +5,7 @@ const Filter = require('./Filter');
 
 module.exports = class Tmi extends Client {
   /** @type {[TwChannel]} */
-  twConnectedChannels = [];
+  connectedChannels = [];
   /** @type {[Filter]} */
   filters = [];
 
@@ -15,6 +15,10 @@ module.exports = class Tmi extends Client {
       identity: {
         username: process.env.TWITCH_USER,
         password: process.env.TWITCH_TOKEN,
+      },
+      connection: {
+        reconnect: true,
+        reconnectInterval: 3 * 1000,
       },
     });
 
@@ -27,7 +31,7 @@ module.exports = class Tmi extends Client {
    * @returns
    */
   isJoined(twChannel) {
-    return this.twConnectedChannels.find(
+    return this.connectedChannels.find(
       c => c.name === this.fixChannelName(twChannel),
     );
   }
@@ -39,7 +43,10 @@ module.exports = class Tmi extends Client {
       this.isJoined(twChannelName)
     )
       return false;
-    this.twConnectedChannels.push(new TwChannel(twChannelName));
+
+    this.connectedChannels.push(new TwChannel(twChannelName));
+    this.utils.log(`<${twChannelName}> chat join`);
+
     return await this.join(twChannelName);
   }
 
@@ -47,12 +54,13 @@ module.exports = class Tmi extends Client {
     if (!twChannelName || typeof twChannelName !== 'string') return false;
     const twChannel = this.isJoined(twChannelName);
     if (!twChannel) return false;
-    this.twConnectedChannels.splice(
-      this.twConnectedChannels.findIndex(
-        twChannelA => twChannelA === twChannel,
-      ),
+
+    this.connectedChannels.splice(
+      this.connectedChannels.findIndex(twChannelA => twChannelA === twChannel),
       1,
     );
+    this.utils.log(`<${twChannelName}> chat leave`);
+
     return await this.part(twChannelName);
   }
 

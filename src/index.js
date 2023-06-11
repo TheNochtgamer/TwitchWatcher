@@ -1,5 +1,3 @@
-const cacheMe = require('./services/cacheMe');
-
 require('dotenv').config();
 
 (async () => {
@@ -9,7 +7,6 @@ require('dotenv').config();
   globalThis._ = {
     tmi,
     bot,
-    cacheMe,
   };
 
   await Promise.all([bot.init(process.env.TOKEN), tmi.init()]);

@@ -13,7 +13,7 @@ const { Names } = require('./Enums');
 
 module.exports = class Bot extends Client {
   /** @type {[ToLogs]} */
-  #toLog = [];
+  toLog = [];
   /**
    * @type {import("discord.js").Webhook[]}
    */
@@ -38,7 +38,7 @@ module.exports = class Bot extends Client {
   }
 
   async #loop() {
-    const dsChannels = this.#toLog
+    const dsChannels = this.toLog
       // .filter(
       //   (logs, index, arr) =>
       //     !arr
@@ -62,7 +62,7 @@ module.exports = class Bot extends Client {
           ) ??
           (await dsChannel.fetchWebhooks()).at(0) ??
           (await dsChannel.createWebhook({ name: Names.newWebhook }));
-        const myLogs = this.#toLog.filter(log => log.dsChannel === dsChannel);
+        const myLogs = this.toLog.filter(log => log.dsChannel === dsChannel);
 
         try {
           const content =
@@ -100,10 +100,6 @@ module.exports = class Bot extends Client {
     // }
 
     await Promise.allSettled(promises);
-  }
-
-  addLog(log) {
-    this.#toLog.push(log);
   }
 
   async loadCommands() {
@@ -152,7 +148,7 @@ module.exports = class Bot extends Client {
     while (true) {
       await delay(2 * 1000);
       await this.#loop();
-      this.#toLog.splice(0);
+      this.toLog.splice(0);
     }
   }
 };

@@ -18,7 +18,7 @@ module.exports = {
         .setDescription('Añadir un filtro')
         .addStringOption(opt =>
           opt
-            .setName('filtroname')
+            .setName('filtroName')
             .setDescription('El nombre que tendra el filtro (debe ser unico)')
             .setRequired(true)
             .setMinLength(2),
@@ -35,10 +35,11 @@ module.exports = {
           opt
             .setName('twchannels')
             .setDescription(
-              'Los canales de twitch en los que funcionara el filtro (separados por ,)',
+              'Los canales de twitch a los que quieras adjuntar el filtro (separados por ,)',
             )
             .setRequired(true)
-            .setAutocomplete(true),
+            .setAutocomplete(true)
+            .setMinLength(2),
         )
         .addChannelOption(opt =>
           opt
@@ -70,10 +71,53 @@ module.exports = {
         .setDescription('Eliminar un filtro')
         .addStringOption(opt =>
           opt
-            .setName('filtroname')
+            .setName('filtroName')
             .setDescription('El filtro a eliminar')
             .setRequired(true)
-            .setAutocomplete(true),
+            .setAutocomplete(true)
+            .setMinLength(2),
+        ),
+    )
+    .addSubcommand(sub =>
+      sub
+        .setName('linkchannel')
+        .setDescription('Adjunta un filtro a un canal de twitch')
+        .addStringOption(opt =>
+          opt
+            .setName('filtroName')
+            .setDescription('El filtro a adjuntar')
+            .setRequired(true)
+            .setAutocomplete(true)
+            .setMinLength(2),
+        )
+        .addStringOption(opt =>
+          opt
+            .setName('twchannel')
+            .setDescription('El canal de twitch que quieras adjuntar al filtro')
+            .setRequired(true)
+            .setAutocomplete(true)
+            .setMinLength(2),
+        ),
+    )
+    .addSubcommand(sub =>
+      sub
+        .setName('unlinkchannel')
+        .setDescription('Separa un filtro de un canal de twitch')
+        .addStringOption(opt =>
+          opt
+            .setName('filtroName')
+            .setDescription('El filtro a separar')
+            .setRequired(true)
+            .setAutocomplete(true)
+            .setMinLength(2),
+        )
+        .addStringOption(opt =>
+          opt
+            .setName('twchannelfil')
+            .setDescription('El canal de twitch que quieras separar del filtro')
+            .setRequired(true)
+            .setAutocomplete(true)
+            .setMinLength(2),
         ),
     ),
   /**
@@ -83,13 +127,7 @@ module.exports = {
   async run(interaction) {
     const subCommand = interaction.options.getSubcommand();
     /** @type {String} */
-    const filtroname = interaction.options.get('filtroname', true).value;
-
-    let filtro = interaction.options.get('filtro')?.value;
-    const dsTarget = interaction.options.get('dschannel')?.channel;
-    const twChannelsName = interaction.options.get('twchannels')?.value;
-    const flags = interaction.options.get('flags')?.value;
-    const inverted = interaction.options.get('inverted')?.value;
+    const filtroName = interaction.options.get('filtroName', true).value;
 
     // if (!tmi.twConnectedChannels[0]?.name) {
     //   await interaction.reply({
@@ -101,10 +139,17 @@ module.exports = {
 
     switch (subCommand) {
       case 'add': {
+        /** @type {String} */
+        const twChannelsName = interaction.options.get('twchannels')?.value;
+        const flags = interaction.options.get('flags')?.value;
+        const inverted = interaction.options.get('inverted')?.value;
+        const dsTarget = interaction.options.get('dschannel')?.channel;
+        let filtro = interaction.options.get('filtro')?.value;
+
+        const twChannelNames = twChannelsName.split(',').filter(twCh => twCh);
+
         if (filtro?.toLowerCase() === 'all') filtro = '';
-        const dsChannel = dsTarget?.isTextBased()
-          ? dsTarget
-          : interaction.channel;
+        const dsChannel = dsTarget?.isTextBased() ? dsTarget : null;
         const res = Filter.validateRegex(filtro, flags);
         if (res instanceof Error) {
           await interaction.reply({
@@ -113,7 +158,7 @@ module.exports = {
           });
           return;
         }
-        if (tmi.filters.some(filter => filter.name === filtroname)) {
+        if (tmi.filters.some(filter => filter.name === filtroName)) {
           await interaction.reply({
             content: 'Ya existe un filtro con ese nombre',
             ephemeral: true,
@@ -121,33 +166,114 @@ module.exports = {
           return;
         }
         const filter = new Filter(
-          filtroname,
+          filtroName,
           res,
           dsChannel,
-          twChannelsName.split(',').filter(twCh => twCh),
+          twChannelNames,
           inverted,
         );
         tmi.filters.push(filter);
 
         await interaction.reply({
-          content: `Filtro "${filtroname}" añadido a el canal ${dsChannel}`,
+          content:
+            `Filtro "${filtroName}" creado.\n` +
+            '```\n' +
+            filter.regExp +
+            '```',
         });
         break;
       }
       case 'delete': {
         const filtroIndx = tmi.filters.findIndex(
-          filter => filter.name === filtroname,
+          filter => filter.name === filtroName,
         );
         if (filtroIndx === -1) {
           await interaction.reply({
-            content: `No existe el filtro "${filtroname}"`,
+            content: `No existe el filtro "${filtroName}"`,
+            ephemeral: true,
           });
           return;
         }
         tmi.filters.splice(filtroIndx, 1);
         await interaction.reply({
-          content: `"${filtroname}" filtro eliminado`,
+          content: `"${filtroName}" filtro eliminado`,
         });
+        break;
+      }
+      case 'linkchannel': {
+        const filtro = tmi.filters.find(filtro => filtro.name === filtroName);
+        const twchannel = interaction.options.get('twchannel', true).value;
+
+        if (!filtro) {
+          await interaction.reply({
+            content: `No existe el filtro "${filtroName}"`,
+            ephemeral: true,
+          });
+          return;
+        }
+        if (
+          !twchannel ||
+          !tmi.connectedChannels.some(twconnect => twconnect.name === twchannel)
+        ) {
+          await interaction.reply({
+            content: `No existe el canal "${twchannel}"`,
+            ephemeral: true,
+          });
+          return;
+        }
+        if (filtro.twChannels.some(twchannel2 => twchannel2 === twchannel)) {
+          await interaction.reply({
+            content: `El filtro ya tiene este canal adjuntado "${twchannel}"`,
+            ephemeral: true,
+          });
+          return;
+        }
+
+        filtro.twChannels.push(twchannel);
+
+        await interaction.reply({
+          content: `Filtro "${filtroName}" adjuntado al canal "${twchannel}"`,
+        });
+        break;
+      }
+      case 'unlinkchannel': {
+        const filtro = tmi.filters.find(filtro => filtro.name === filtroName);
+        const twchannel = interaction.options.get('twchannelfil', true).value;
+
+        if (!filtro) {
+          await interaction.reply({
+            content: `No existe el filtro "${filtroName}"`,
+            ephemeral: true,
+          });
+          return;
+        }
+        if (
+          !twchannel ||
+          !tmi.connectedChannels.some(twconnect => twconnect.name === twchannel)
+        ) {
+          await interaction.reply({
+            content: `No existe el canal "${twchannel}"`,
+            ephemeral: true,
+          });
+          return;
+        }
+        if (!filtro.twChannels.some(twchannel2 => twchannel2 === twchannel)) {
+          await interaction.reply({
+            content: `El filtro no tenia este canal adjuntado "${twchannel}"`,
+            ephemeral: true,
+          });
+          return;
+        }
+
+        filtro.twChannels.splice(
+          filtro.twChannels.findIndex(twchannel2 => twchannel2 === twchannel),
+          1,
+        );
+
+        await interaction.reply({
+          content: `Filtro "${filtroName}" separado del canal "${twchannel}"`,
+        });
+
         break;
       }
     }
@@ -156,18 +282,21 @@ module.exports = {
   /**
    *
    * @param {import('discord.js').AutocompleteFocusedOption} focused
+   * @param {import('discord.js').AutocompleteInteraction} interaction
    */
-  autoComplete(focused) {
+  autoComplete(focused, interaction) {
     switch (focused.name) {
-      case 'filtroname':
-        return tmi.filters.map(filter => {
-          return {
-            name: `${filter.name} #${filter.dsChannel.name}`,
-            value: filter.name,
-          };
-        });
+      case 'filtroName':
+        return tmi.filters
+          .filter(filter => filter.name.startsWith(focused.value))
+          .map(filter => {
+            return {
+              name: filter.name,
+              value: filter.name,
+            };
+          });
       case 'twchannels':
-        return tmi.twConnectedChannels
+        return tmi.connectedChannels
           .map(({ name }) => name)
           .filter(twChName => twChName.startsWith(focused.value))
           .map(twChName => {
@@ -176,6 +305,44 @@ module.exports = {
               value: twChName,
             };
           });
+      case 'twchannel': {
+        const filtroName = interaction.options.get('filtroName')?.value;
+        const filtro = tmi.filters.find(filtro => filtro.name === filtroName);
+
+        return tmi.connectedChannels
+          .map(({ name }) => name)
+          .filter(
+            twChName =>
+              twChName.startsWith(focused.value) &&
+              (!filtro
+                ? true
+                : !filtro.twChannels.some(twChName2 => twChName2 === twChName)),
+          )
+          .map(twChName => {
+            return {
+              name: twChName,
+              value: twChName,
+            };
+          });
+      }
+      case 'twchannelfil': {
+        const filtroName = interaction.options.get('filtroName')?.value;
+        const filtro = tmi.filters.find(filtro => filtro.name === filtroName);
+
+        if (!filtro)
+          return {
+            name: 'Invalid filter name',
+            value: 'Error',
+          };
+        return filtro.twChannels
+          .filter(twChName => twChName.startsWith(focused.value))
+          .map(twChName => {
+            return {
+              name: twChName,
+              value: twChName,
+            };
+          });
+      }
     }
   },
 };

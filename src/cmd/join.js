@@ -13,7 +13,8 @@ module.exports = {
       option
         .setName('twitch')
         .setDescription('Canal de twitch para conectar')
-        .setRequired(true),
+        .setRequired(true)
+        .setMinLength(2),
     )
     .setDMPermission(false)
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
@@ -25,7 +26,10 @@ module.exports = {
   async run(interaction) {
     const twChannelName = interaction.options.get('twitch', true).value;
     if (tmi.isJoined(twChannelName)) {
-      await interaction.reply({ content: 'Ya esta unido a este canal' });
+      await interaction.reply({
+        content: 'Ya esta unido a este canal',
+        ephemeral: true,
+      });
       return;
     }
 
@@ -33,6 +37,7 @@ module.exports = {
     if (!res) {
       await interaction.reply({
         content: 'Algo salio mal al intentar unirse al canal',
+        ephemeral: true,
       });
       return;
     }
