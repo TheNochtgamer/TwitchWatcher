@@ -13,7 +13,7 @@ module.exports = {
     console.log(`${interaction.user.tag} hizo ping`);
     await interaction.reply({
       ephemeral: true,
-      content: `Pong! ${interaction.client.ws.ping}`,
+      content: `Pong! ${interaction.client.ws.ping}ms`,
     });
   },
 };

@@ -62,7 +62,15 @@ module.exports = {
             error,
           );
           await interaction.editReply({
-            content: `Script: ${script.name}\nTuvo un error interno...`,
+            content: `Script: ${script.name}\nHubo un error durante la ejecucion...`,
+          });
+          await interaction.followUp({
+            content:
+              'Hubo un error interno ejecutando el script' +
+              '\n```\n' +
+              error +
+              '```',
+            ephemeral: true,
           });
         }
 
