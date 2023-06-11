@@ -3,3 +3,5 @@
 /nocht
 /scripts/*.*
 .env
+
+!/scripts/testScript.js
